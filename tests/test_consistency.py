@@ -9,13 +9,13 @@ import sys
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "book-publishing" / "scripts"))
+sys.path.insert(0, str(ROOT / "scripts"))
 import _common as C  # noqa: E402
 import book  # noqa: E402
 import build_docx  # noqa: E402
 import verify  # noqa: E402
 
-SKILL = ROOT / "book-publishing"
+SKILL = ROOT  # 저장소 루트가 곧 스킬 폴더다 (SKILL.md, references/, scripts/, assets/)
 DOCS = [SKILL / "SKILL.md", ROOT / "README.md"] + sorted((SKILL / "references").glob("*.md"))
 TEMPLATE = (SKILL / "assets" / "user-book-toc.md").read_text(encoding="utf-8")
 EXAMPLE = (ROOT / "examples" / "notebooklm" / "user-book-toc.md").read_text(encoding="utf-8")
@@ -101,29 +101,12 @@ class TestConsistency(unittest.TestCase):
         name = __import__("re").search(r"^name: (.+)$", fm, __import__("re").M).group(1).strip()
         desc = __import__("re").search(r"^description: (.+)$", fm, __import__("re").M).group(1).strip().strip('"')
         self.assertEqual(name, "book-publishing")
-        self.assertEqual(SKILL.name, name, "폴더 이름과 스킬 이름을 같게 둔다")
         self.assertLessEqual(len(name), 64)
         self.assertNotRegex(name, r"anthropic|claude")
         self.assertLessEqual(len(desc), 1024)
         self.assertNotRegex(desc, r"<[^>]+>")
         self.assertRegex(fm, r"(?m)^license: ")
-        self.assertEqual((SKILL / "LICENSE.txt").read_bytes(), (ROOT / "LICENSE").read_bytes())
-
-    def test_dist_zip_is_up_to_date(self):
-        # 업로드용 ZIP이 폴더와 다르면 사용자가 옛 스킬을 설치하게 된다
-        import zipfile
-        sys.path.insert(0, str(ROOT / "tools"))
-        import package
-        zpath = ROOT / "dist" / "book-publishing.zip"
-        self.assertTrue(zpath.is_file(), "python3 tools/package.py로 ZIP을 만드세요")
-        with zipfile.ZipFile(zpath) as z:
-            inside = {n: z.read(n) for n in z.namelist()}
-        expected = {f"book-publishing/{f.relative_to(SKILL).as_posix()}": f.read_bytes() for f in package.files()}
-        self.assertEqual(sorted(inside), sorted(expected), "ZIP 파일 목록이 폴더와 다르다. tools/package.py를 다시 돌리세요")
-        stale = [n for n in expected if inside.get(n) != expected[n]]
-        self.assertEqual(stale, [], "ZIP이 폴더보다 오래됐다. python3 tools/package.py")
-        self.assertTrue(all(n.startswith("book-publishing/") for n in inside), "ZIP 최상위는 book-publishing 폴더 하나여야 한다")
-        self.assertIn("book-publishing/SKILL.md", inside)
+        self.assertTrue((SKILL / "LICENSE").is_file(), "스킬 폴더(저장소 루트)에 LICENSE가 있어야 한다")
 
     def test_docs_have_no_em_dash(self):
         # 작업 규칙: 줄표 대신 쉼표, 마침표, 괄호를 쓴다 (부호 자체를 설명하는 줄은 예외)

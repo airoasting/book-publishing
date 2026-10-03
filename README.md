@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue" alt="License Apache 2.0">
   <img src="https://img.shields.io/badge/Works%20with-Claude%20Code%20%C2%B7%20Claude%20%C2%B7%20ChatGPT-blueviolet" alt="Works with Claude Code, Claude and ChatGPT">
   <img src="https://img.shields.io/badge/Reviewers-9%20Personas-orange" alt="Reviewers 9 Personas">
-  <img src="https://img.shields.io/badge/Tests-145%20passing-success" alt="Tests 145 passing">
+  <img src="https://img.shields.io/badge/Tests-144%20passing-success" alt="Tests 144 passing">
 </p>
 
 # book-publishing
@@ -26,13 +26,13 @@ book-publishing은 AI 에이전트 팀이 한국어 책 한 권을 자료 조사
 
 ### 1. 설치
 
-설치하는 것은 `book-publishing` 폴더 하나입니다. Claude와 ChatGPT가 함께 쓰는 스킬 표준(Agent Skills)을 따르므로 같은 폴더가 세 곳에서 모두 동작합니다.
+이 저장소가 곧 스킬 폴더입니다. 맨 위에 `SKILL.md`가 있고, Claude와 ChatGPT가 함께 쓰는 스킬 표준(Agent Skills)을 따르므로 같은 폴더가 세 곳에서 모두 동작합니다.
 
 | 어디서 쓰나 | 설치 방법 |
 |-------------|-----------|
 | **Claude Code** (데스크톱 앱 Code 탭, 터미널) | 아래 문장을 붙여 넣으면 Claude가 `홈 > .claude > skills > book-publishing`에 설치합니다 |
-| **Claude 앱** (claude.ai, 데스크톱 채팅) | [book-publishing.zip 내려받기](https://github.com/airoasting/book-publishing/raw/main/dist/book-publishing.zip) 후, **설정 > 기능(Capabilities)**에서 코드 실행을 켜고 **사용자 지정(Customize) > 스킬 > 스킬 만들기 > 스킬 업로드**로 올립니다. Pro, Max, Team, Enterprise 요금제에서 쓸 수 있습니다 |
-| **ChatGPT** | 같은 ZIP을 내려받아 **플러그인(Plugins) > 스킬(Skills) > 만들기 > 컴퓨터에서 업로드**로 올립니다. 스킬 메뉴가 열린 요금제(현재 Business, Enterprise, Edu 등)에서 쓸 수 있습니다. 메뉴가 보이지 않으면 아직 내 요금제에 열리지 않은 것입니다 |
+| **Claude 앱** (claude.ai, 데스크톱 채팅) | 이 페이지 위의 **Code > Download ZIP**으로 저장소를 ZIP으로 받습니다. **설정 > 기능(Capabilities)**에서 코드 실행을 켜고 **사용자 지정(Customize) > 스킬 > 스킬 만들기 > 스킬 업로드**로 그 ZIP을 올립니다. Pro, Max, Team, Enterprise 요금제에서 쓸 수 있습니다 |
+| **ChatGPT** | 같은 방법으로 받은 ZIP을 **플러그인(Plugins) > 스킬(Skills) > 만들기 > 컴퓨터에서 업로드**로 올립니다. 스킬 메뉴가 열린 요금제(현재 Business, Enterprise, Edu 등)에서 쓸 수 있습니다. 메뉴가 보이지 않으면 아직 내 요금제에 열리지 않은 것입니다 |
 
 회사 계정(Team, Enterprise, Business)은 관리자가 '스킬'과 '코드 실행'을 허용해야 메뉴가 보입니다. 보이지 않으면 관리자에게 두 가지 허용을 요청하세요. Mac Safari에서 ZIP 대신 폴더가 생기면 Safari 설정 > 일반 > '다운로드 후 안전한 파일 열기'를 끄고 다시 받으세요 (스킬 ZIP과 작업 묶음 ZIP 모두 ZIP 그대로 올려야 합니다).
 
@@ -40,7 +40,7 @@ Claude Code에 붙여 넣을 문장:
 
 ```
 https://github.com/airoasting/book-publishing
-이 저장소의 book-publishing 폴더를 내 스킬 폴더(~/.claude/skills/book-publishing)에 설치하고, 그 안의 scripts/requirements.txt 파이썬 패키지도 설치해줘
+이 저장소를 내 스킬 폴더(~/.claude/skills/book-publishing)에 내려받고, 그 안의 scripts/requirements.txt 파이썬 패키지도 설치해줘
 ```
 
 검사기와 Word 변환에 파이썬 패키지 두 개(python-docx, matplotlib)를 씁니다. Claude 앱과 ChatGPT의 코드 실행 환경에는 보통 이미 들어 있습니다. LibreOffice가 있으면 PDF와 실제 쪽수까지 만듭니다(없어도 됩니다).
@@ -159,22 +159,20 @@ AI에게 오류 메시지를 그대로 보여 주고 "이거 해결해줘"라고
 <summary>펼쳐 보기 (스킬 폴더, 작업 폴더 구조, 테스트)</summary>
 
 ```
-(저장소)
-├── book-publishing/          ★ 설치하는 스킬 (이 폴더 하나가 스킬 전체)
-│   ├── SKILL.md              작동 규칙
-│   ├── references/           단계별 실행 문서 (research, write, review, publish)
-│   ├── scripts/
-│   │   ├── book.py           상태 판정, 병합, 점수 계산, 변경 기록 확인, 작업 묶음 내보내기
-│   │   ├── verify.py         원고 규칙 검사기
-│   │   ├── build_docx.py     Word 변환기와 변환 후 검사
-│   │   ├── figure_kit.py     그림 스타일 도구
-│   │   └── requirements.txt
-│   ├── assets/user-book-toc.md   책 설정 템플릿 (작업 폴더에 복사해 채움)
-│   └── LICENSE.txt
-├── dist/book-publishing.zip  Claude 앱, ChatGPT 업로드용 (tools/package.py로 생성)
-├── examples/notebooklm/      완성 예시 설정, 결과물 미리보기, v1 샘플 PDF
+book-publishing/             ★ 저장소 = 스킬 폴더
+├── SKILL.md                  작동 규칙 (스킬의 입구)
+├── references/               단계별 실행 문서 (research, write, review, publish)
+├── scripts/
+│   ├── book.py               상태 판정, 병합, 점수 계산, 변경 기록 확인, 작업 묶음 내보내기
+│   ├── verify.py             원고 규칙 검사기
+│   ├── build_docx.py         Word 변환기와 변환 후 검사
+│   ├── figure_kit.py         그림 스타일 도구
+│   └── requirements.txt
+├── assets/user-book-toc.md   책 설정 템플릿 (작업 폴더에 복사해 채움)
+├── LICENSE
+├── examples/notebooklm/      완성 예시 설정, 결과물 미리보기
+├── output/NotebookLM_final.pdf   240쪽 예시 책 최종 산출물 (v1)
 ├── tests/                    회귀 테스트
-├── tools/package.py          설치용 ZIP 만들기
 └── docs/                     README 이미지
 ```
 
@@ -205,19 +203,13 @@ python3 -m unittest discover -s tests
 
 테스트는 지금까지 발견된 결함마다 하나씩 있습니다. 검사기나 변환기를 고칠 때는 먼저 실패하는 테스트를 추가하세요. 정규식 판정이 갈렸던 문장(실명, 수치, 1인칭, 장 라벨, 금지 용어 매칭)은 `tests/fixtures/corpus.tsv`에 기대값과 함께 모읍니다.
 
-`book-publishing/` 안의 파일을 고친 뒤에는 업로드용 ZIP을 다시 만듭니다. ZIP이 폴더와 다르면 테스트가 실패합니다.
-
-```bash
-python3 tools/package.py
-```
-
 </details>
 
 ## 버전 히스토리
 
 | 버전 | 날짜 | 무엇이 달라졌나 |
 |------|------|-----------------|
-| 4.0 | 2026-10-03 | **이름을 `book-publishing`으로 바꾸고, Claude와 ChatGPT에 모두 설치되는 구조로 정리했습니다.** 설치 단위는 `book-publishing` 폴더 하나이고, 앱 업로드용 ZIP(`dist/book-publishing.zip`)과 대화창이 바뀌어도 이어 쓰는 작업 묶음 내보내기를 더했습니다. 판단은 사람과 리뷰어가, 계산은 스크립트가 합니다: 이어하기 지점, 단계 순서, 리뷰 점수, 원고 병합, 변경 기록 대조를 `book.py`로 옮겼고, 🔴 지적은 번호와 위치로 추적해 그 부를 실제로 고쳐야 넘어갑니다. Word 변환기를 포함했고, 검사를 통과하고 사실 확인을 받은 원고만 변환하며, PDF 차례에 실제 쪽 번호를 넣습니다. 사내 배포 책을 위해 실명과 금지 용어 검사를 원고 원문, 그림 속 글자, 출처 목록, 완성된 Word 문서까지 넓혔고, 사실 확인 표(`fact-check.md`)와 배포 표기를 더했습니다. 출처 대조, 화자 성격 세 가지, 첫 실행 인터뷰, 사람 확인 세 지점, 리뷰어 격리를 더했고, 회귀 테스트 145개를 붙였습니다 |
+| 4.0 | 2026-10-03 | **이름을 `book-publishing`으로 바꾸고, Claude와 ChatGPT에 모두 설치되는 구조로 정리했습니다.** 저장소 자체가 스킬 폴더라 그대로 설치하면 되고, 대화창이 바뀌어도 이어 쓰는 작업 묶음 내보내기를 더했습니다. 판단은 사람과 리뷰어가, 계산은 스크립트가 합니다: 이어하기 지점, 단계 순서, 리뷰 점수, 원고 병합, 변경 기록 대조를 `book.py`로 옮겼고, 🔴 지적은 번호와 위치로 추적해 그 부를 실제로 고쳐야 넘어갑니다. Word 변환기를 포함했고, 검사를 통과하고 사실 확인을 받은 원고만 변환하며, PDF 차례에 실제 쪽 번호를 넣습니다. 사내 배포 책을 위해 실명과 금지 용어 검사를 원고 원문, 그림 속 글자, 출처 목록, 완성된 Word 문서까지 넓혔고, 사실 확인 표(`fact-check.md`)와 배포 표기를 더했습니다. 출처 대조, 화자 성격 세 가지, 첫 실행 인터뷰, 사람 확인 세 지점, 리뷰어 격리를 더했고, 회귀 테스트 144개를 붙였습니다 |
 | 3.0 | 2026-07-11 | **설치가 쉬워졌고, 다른 책에도 맞추기 시작했습니다.** 주소 하나로 설치하도록 구조를 짰고, 책 정보 파일을 `book` 폴더에 모았습니다. 자동 검사 규칙을 책 정보 파일에서 읽게 바꿨습니다 |
 | 2.0 | 2026-05-04 | **끝까지 자동으로 돌아가는 뼈대를 갖췄습니다.** 책마다 날짜 폴더, 이어 쓰기용 완료 표시, 원고 자동 검사, 9명의 리뷰 기준을 갖췄습니다 |
 | 1.0 | 2026-03-13 | **첫 버전.** 리서치부터 초안까지 책 한 권 분량을 써내는 기본 흐름을 만들었습니다 |

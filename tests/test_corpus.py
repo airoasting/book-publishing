@@ -4,7 +4,7 @@ import sys
 import unittest
 
 HERE = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "book-publishing" / "scripts"))
+sys.path.insert(0, str(HERE.parent / "scripts"))
 import _common as C  # noqa: E402
 import verify  # noqa: E402
 
