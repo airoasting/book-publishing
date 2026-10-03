@@ -1,4 +1,0 @@
-[
-  {"id": "cite_001", "tier": 1, "title": "테스트용 공식 자료", "url": "https://example.com/official", "claim": "시장 점유율 42%", "used_in": ["제1장"]},
-  {"id": "cite_002", "tier": 3, "title": "테스트용 블로그", "url": "https://example.com/blog", "claim": "트렌드 시그널", "used_in": []}
-]
