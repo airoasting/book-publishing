@@ -32,8 +32,8 @@ class Workspace(unittest.TestCase):
         self.tmp = tempfile.mkdtemp()
         self.old = os.getcwd()
         os.chdir(self.tmp)
-        pathlib.Path("book").mkdir()
-        shutil.copy(FIX / "toc.md", "book/user-book-toc.md")
+        pathlib.Path("user_input").mkdir()
+        shutil.copy(FIX / "toc.md", "user_input/user-book-toc.md")
 
     def tearDown(self):
         os.chdir(self.old)
@@ -116,7 +116,7 @@ class Workspace(unittest.TestCase):
 
 class TestStatus(Workspace):
     def test_template_toc_requires_interview(self):
-        pathlib.Path("book/user-book-toc.md").write_text("- 제목: {{책 제목}}\n", encoding="utf-8")
+        pathlib.Path("user_input/user-book-toc.md").write_text("- 제목: {{책 제목}}\n", encoding="utf-8")
         self.assertEqual(self.status()["action"], "interview")
         self.assertEqual(self.bk("init")[0], 1, "빈 템플릿으로는 책을 시작하지 않는다")
 
@@ -270,10 +270,15 @@ class TestExportImport(Workspace):
 
     def test_resume_without_bundle_asks_for_zip(self):
         # 결함: 앱에서 ZIP 없이 "이어서 써줘"라고 하면 첫 인터뷰를 다시 시작해 책이 사라진 것처럼 보였다
-        shutil.rmtree(pathlib.Path("book"), ignore_errors=True)
+        shutil.rmtree(pathlib.Path("user_input"), ignore_errors=True)
         s = self.status()
         self.assertEqual(s["action"], "interview")
         self.assertIn("작업 묶음", s["next"])
+
+    def test_legacy_book_folder_still_works(self):
+        # 입력 폴더 이름을 book/에서 user_input/으로 바꿨다. 예전 작업 폴더도 그대로 이어 쓴다
+        shutil.move("user_input", "book")
+        self.assertNotEqual(self.status()["action"], "interview")
 
     def test_import_rejects_unsafe_paths(self):
         import zipfile
@@ -604,7 +609,7 @@ class TestMergeGates(Workspace):
 
     def test_toc_change_blocks_until_accepted(self):
         self.run_to_draft()
-        toc = pathlib.Path("book/user-book-toc.md")
+        toc = pathlib.Path("user_input/user-book-toc.md")
         toc.write_text(toc.read_text(encoding="utf-8").replace("검증기 회귀 테스트용", "다른 책"), encoding="utf-8")
         self.write("04_review-red.md", "지적 없음")
         code, out = self.bk("score", "04_review-red")
@@ -701,7 +706,7 @@ class TestMergeGates(Workspace):
         ms = self.d / "15_manuscript.md"
         self.assertEqual(self.bk("approve", "facts")[0], 1, "검사 전에는 사실 확인을 승인할 수 없다")
         # 결함: 출판 직전에 검증 규칙을 지우고 다시 검사하면 통과했다
-        toc = pathlib.Path("book/user-book-toc.md")
+        toc = pathlib.Path("user_input/user-book-toc.md")
         orig = toc.read_text(encoding="utf-8")
         toc.write_text(orig.replace("- 금지 용어: 커스텀 지시 → 맞춤 지시\n", ""), encoding="utf-8")
         with contextlib.redirect_stdout(io.StringIO()):
@@ -748,7 +753,7 @@ class TestMergeGates(Workspace):
         self.ok("approve", "facts")
         self.assertEqual(self.status()["action"], "build")
         # 결함: 사실 확인 승인 뒤 'AI 제작 고지'를 바꾸고 accept-toc만 하면 재승인 없이 변환됐다
-        toc = pathlib.Path("book/user-book-toc.md")
+        toc = pathlib.Path("user_input/user-book-toc.md")
         orig = toc.read_text(encoding="utf-8")
         toc.write_text(orig.replace("- AI 제작 고지: 이 책은 AI 도구의 도움을 받아 쓰고 저자가 검수했다", "- AI 제작 고지: 없음"), encoding="utf-8")
         self.ok("accept-toc")

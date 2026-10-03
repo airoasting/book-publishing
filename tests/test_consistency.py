@@ -15,10 +15,10 @@ import book  # noqa: E402
 import build_docx  # noqa: E402
 import verify  # noqa: E402
 
-SKILL = ROOT  # 저장소 루트가 곧 스킬 폴더다 (SKILL.md, references/, scripts/, assets/)
+SKILL = ROOT  # 저장소 루트가 곧 스킬 폴더다 (SKILL.md, references/, scripts/, user_input/, assets/)
 DOCS = [SKILL / "SKILL.md", ROOT / "README.md"] + sorted((SKILL / "references").glob("*.md"))
-TEMPLATE = (SKILL / "assets" / "user-book-toc.md").read_text(encoding="utf-8")
-EXAMPLE = (ROOT / "examples" / "notebooklm" / "user-book-toc.md").read_text(encoding="utf-8")
+TEMPLATE = (SKILL / "user_input" / "user-book-toc.md").read_text(encoding="utf-8")
+EXAMPLE = (ROOT / "example" / "user-book-toc.md").read_text(encoding="utf-8")
 
 
 def subcommands():
@@ -110,7 +110,7 @@ class TestConsistency(unittest.TestCase):
 
     def test_docs_have_no_em_dash(self):
         # 작업 규칙: 줄표 대신 쉼표, 마침표, 괄호를 쓴다 (부호 자체를 설명하는 줄은 예외)
-        for doc in DOCS + [SKILL / "assets" / "user-book-toc.md"]:
+        for doc in DOCS + [SKILL / "user_input" / "user-book-toc.md"]:
             for i, line in enumerate(doc.read_text(encoding="utf-8").splitlines(), 1):
                 if re.search(r"[—–]", line) and "em dash" not in line:
                     self.fail(f"{doc.name}:{i} 줄표 사용")

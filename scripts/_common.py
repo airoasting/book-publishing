@@ -12,22 +12,31 @@ import re
 import pathlib
 
 SKILL_DIR = pathlib.Path(__file__).resolve().parent.parent  # 스킬 폴더 (저장소 루트)
-TOC_REL = pathlib.Path("book") / "user-book-toc.md"         # 작업 폴더 안의 책 설정
-TOC_TEMPLATE = SKILL_DIR / "assets" / "user-book-toc.md"     # 스킬에 든 빈 템플릿
+INPUT_DIR = "user_input"                                     # 사용자가 넣는 파일: 책 설정과 sources/(사내 자료)
+LEGACY_INPUT_DIR = "book"                                    # 4.0 이전 작업 폴더의 입력 폴더
+TOC_NAME = "user-book-toc.md"
+TOC_TEMPLATE = SKILL_DIR / INPUT_DIR / TOC_NAME              # 스킬에 든 빈 템플릿
 PLACEHOLDER_RE = re.compile(r"\{\{[^}]*\}\}")
 
 
 # ---------------------------------------------------------------------------
 # 경로
 # ---------------------------------------------------------------------------
+def input_dir(root=None):
+    """작업 폴더의 입력 폴더. user_input/이 없고 예전 book/만 있으면 그것을 쓴다."""
+    root = pathlib.Path(root) if root else pathlib.Path.cwd()
+    new, old = root / INPUT_DIR, root / LEGACY_INPUT_DIR
+    return old if not new.exists() and (old / TOC_NAME).is_file() else new
+
+
 def find_toc(root=None):
-    """작업 폴더의 book/user-book-toc.md를 먼저, 없으면 스킬의 빈 템플릿(assets/)을 돌려준다.
+    """작업 폴더의 user_input/user-book-toc.md를 먼저, 없으면 스킬의 빈 템플릿을 돌려준다.
 
     템플릿에는 빈칸이 있으므로 status가 '첫 실행 인터뷰'로 안내한다. 사용자의 책 정보는 늘
     작업 폴더에 두어, 스킬을 업데이트해도 덮어써지지 않게 한다.
     """
     root = pathlib.Path(root) if root else pathlib.Path.cwd()
-    for cand in (root / TOC_REL, TOC_TEMPLATE):
+    for cand in (input_dir(root) / TOC_NAME, TOC_TEMPLATE):
         if cand.is_file():
             return cand
     return None
