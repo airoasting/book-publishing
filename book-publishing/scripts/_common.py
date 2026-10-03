@@ -1,4 +1,4 @@
-"""book_publishing 스크립트 공통 모듈.
+"""book-publishing 스크립트 공통 모듈.
 
 verify.py, book.py, build_docx.py, figure_kit.py가 함께 쓰는 기능만 둔다.
 - 경로 해석: 스킬 폴더(SKILL_DIR)와 작업 폴더(cwd)를 구분한다
