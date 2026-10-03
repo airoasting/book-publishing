@@ -41,16 +41,16 @@ def count(report, sev, cat=None):
 
 
 def run_in_work(manuscript, toc=TOC, sources=None, figdata=None):
-    """작업 폴더 구조(book/, draft/{책}/, output/{책}/images/)를 만들어 verify를 돌린다. 사내 자료와 그림 기록을 함께 본다."""
+    """작업 폴더 구조(user_input/, draft/{책}/, output/{책}/images/)를 만들어 verify를 돌린다. 사내 자료와 그림 기록을 함께 본다."""
     import json
     with tempfile.TemporaryDirectory() as w:
         w = pathlib.Path(w)
-        (w / "book" / "sources").mkdir(parents=True)
+        (w / "user_input" / "sources").mkdir(parents=True)
         (w / "draft" / "20261003").mkdir(parents=True)
         (w / "output" / "20261003" / "images").mkdir(parents=True)
-        (w / "book" / "user-book-toc.md").write_text(toc, encoding="utf-8")
+        (w / "user_input" / "user-book-toc.md").write_text(toc, encoding="utf-8")
         for name, body in (sources or {}).items():
-            (w / "book" / "sources" / name).write_text(body, encoding="utf-8")
+            (w / "user_input" / "sources" / name).write_text(body, encoding="utf-8")
         if figdata is not None:
             img = w / "output" / "20261003" / "images"
             for key, rec in figdata.items():
@@ -61,7 +61,7 @@ def run_in_work(manuscript, toc=TOC, sources=None, figdata=None):
         ms.write_text(manuscript, encoding="utf-8")
         (ms.parent / "01_citations.json").write_text((FIX / "01_citations.json").read_text(encoding="utf-8"), encoding="utf-8")
         with contextlib.redirect_stdout(io.StringIO()):
-            code = verify.main([str(ms), "--toc", str(w / "book" / "user-book-toc.md"), "--report", str(w / "r.md")])
+            code = verify.main([str(ms), "--toc", str(w / "user_input" / "user-book-toc.md"), "--report", str(w / "r.md")])
         return code, (w / "r.md").read_text(encoding="utf-8")
 
 
@@ -449,7 +449,7 @@ class TestVerify(unittest.TestCase):
             d = pathlib.Path(d)
             (d / "15_manuscript.md").write_text(GOOD, encoding="utf-8")
             (d / "toc.md").write_text(TOC, encoding="utf-8")
-            (d / "01_citations.json").write_text('[{"id": "cite_001", "tier": 0, "title": "사내 정책", "path": "book/sources/없는파일.pdf"}]', encoding="utf-8")
+            (d / "01_citations.json").write_text('[{"id": "cite_001", "tier": 0, "title": "사내 정책", "path": "user_input/sources/없는파일.pdf"}]', encoding="utf-8")
             with contextlib.redirect_stdout(io.StringIO()):
                 verify.main([str(d / "15_manuscript.md"), "--toc", str(d / "toc.md"), "--report", str(d / "r.md")])
             self.assertIn("출처 파일 경로 없음", (d / "r.md").read_text(encoding="utf-8"))

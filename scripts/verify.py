@@ -4,7 +4,7 @@
 사용법:
   python3 verify.py <원고.md> [--toc 경로] [--report 경로] [--citations 경로] [--min-score 9]
 
-- --toc를 생략하면 작업 폴더 → 스킬 폴더 순으로 book/user-book-toc.md를 찾는다
+- --toc를 생략하면 작업 폴더 → 스킬 폴더 순으로 user_input/user-book-toc.md를 찾는다
 - --citations를 생략하면 원고와 같은 폴더의 01_citations.json을 쓴다 (없으면 출처 검사 생략)
 - 종료 코드: 0 통과, 1 🔴 있음, 3 🔴은 없지만 점수가 기준 미만, 2 사용법 오류
 
@@ -23,7 +23,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import _common as C  # noqa: E402
 
-# 기본값은 assets/user-book-toc.md 템플릿의 '검증 규칙' 값과 같다 (tests/test_consistency.py가 확인한다).
+# 기본값은 user_input/user-book-toc.md 템플릿의 '검증 규칙' 값과 같다 (tests/test_consistency.py가 확인한다).
 RULE_DEFAULTS = {
     "어미": "해라체",            # 해라체 | 합쇼체 | 해요체 | 없음(검사 안 함)
     "em dash 허용": "아니오",
@@ -449,7 +449,7 @@ def main(argv=None):
         return 2
     toc_path = pathlib.Path(args.toc or args.legacy_toc) if (args.toc or args.legacy_toc) else C.find_toc()
     if not toc_path or not toc_path.is_file():
-        print("book/user-book-toc.md를 찾지 못했습니다. --toc로 지정하세요.", file=sys.stderr)
+        print("user_input/user-book-toc.md를 찾지 못했습니다. --toc로 지정하세요.", file=sys.stderr)
         return 2
     report_path = pathlib.Path(args.report or args.legacy_report or src.with_name("verify-report.md"))
 

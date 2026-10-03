@@ -60,7 +60,7 @@ PUB_DEFAULTS = {
     "AI 제작 고지": "AI 도구의 도움을 받아 쓰고 사람이 검수한 책",  # 명사형이라 어미·화자와 무관. '없음'이면 넣지 않음
     "배포 표기": "없음",           # 예: '사내 한정', '대외비'. 표지와 모든 쪽 머리글에 찍힌다
 }
-# PUB_DEFAULTS는 assets/user-book-toc.md 템플릿의 '출판 설정' 값과 같다 (tests/test_consistency.py가 확인한다).
+# PUB_DEFAULTS는 user_input/user-book-toc.md 템플릿의 '출판 설정' 값과 같다 (tests/test_consistency.py가 확인한다).
 PAPER = C.PAPER
 FIG_LINE_RE = re.compile(r"^\[그림\s*(\d+)\s*[:.]\s*(.*?)\]\s*$")
 CITE_RE = re.compile(r"\[\[\s*(cite_[\w-]+(?:\s*,\s*cite_[\w-]+)*)\s*\]\]")
@@ -721,9 +721,9 @@ def main(argv=None):
             return 1
         # 게이트를 통과한 변환은 그 책의 설정과 출처만 쓴다 (다른 설정 파일로 고지나 규칙을 바꿔 끼우지 못하게)
         work = src.resolve().parent.parent.parent
-        book_toc = work / "book" / "user-book-toc.md"
+        book_toc = C.input_dir(work) / C.TOC_NAME
         if a.toc and pathlib.Path(a.toc).resolve() != book_toc.resolve():
-            print("변환 중단: 출판 변환에는 이 책의 설정(book/user-book-toc.md)만 쓸 수 있습니다. --toc를 빼세요.", file=sys.stderr)
+            print("변환 중단: 출판 변환에는 이 책의 설정(user_input/user-book-toc.md)만 쓸 수 있습니다. --toc를 빼세요.", file=sys.stderr)
             return 1
         if a.citations and pathlib.Path(a.citations).resolve() != (src.resolve().parent / "01_citations.json").resolve():
             print("변환 중단: 출판 변환에는 이 책의 01_citations.json만 쓸 수 있습니다. --citations를 빼세요.", file=sys.stderr)
@@ -752,7 +752,7 @@ def main(argv=None):
     b = build()
     fails, warns, stats = post_check(out, md, C.is_yes(rules.get("em dash 허용", "")), b, a.allow_missing_images, cites)
     # 마지막 관문: 완성된 문서의 글자 전체(본문, 코드 블록, 표, 머리글, 출처 목록)와 그림 기록을 verify와 같은 기준으로 다시 본다
-    toc_file = (src.resolve().parent.parent.parent / "book" / "user-book-toc.md") if not a.no_gate else toc_path
+    toc_file = (C.input_dir(src.resolve().parent.parent.parent) / C.TOC_NAME) if not a.no_gate else toc_path
     lf, lw = leak_check(out, toc, toc_file, src, b.author)
     fails += [] if a.no_gate else lf
     warns += lw + (lf if a.no_gate else [])  # 시험 변환은 쪽수를 재는 용도라 경고로만 남긴다 (출판 변환에서는 실패)

@@ -21,7 +21,7 @@ LLM이 표를 읽고 추측하던 일(이어하기 지점, 점수 계산, 원고
   accept-toc                 시작 뒤 바뀐 책 설정을 이 책의 기준으로 받아들인다
   figures <ID>               원고의 [그림 N: …] 목록 출력 (figures.py 작성용)
   facts                      출판 전 사실 확인 표(output/{책}/fact-check.md)를 만든다 (사람 확인 3)
-  export [--to 폴더]         작업 묶음(book/, draft/{책}, output/{책})을 ZIP 하나로 내보낸다
+  export [--to 폴더]         작업 묶음(user_input/, draft/{책}, output/{책})을 ZIP 하나로 내보낸다
   import <ZIP>               내보낸 작업 묶음을 작업 폴더에 풀어 이어서 작업한다
 
 Claude 앱(claude.ai)과 ChatGPT는 대화창마다 파일 공간이 새로 시작될 수 있다. 세션을 끝낼 때
@@ -205,7 +205,7 @@ def evidence_sha(d):
     h = hashlib.sha256()
     out = OUTPUT / d.name
     files = [d / "01_citations.json", out / "figures.py"] + sorted((out / "images").glob("fig*")) \
-        + sorted(p for p in (ROOT / "book" / "sources").rglob("*") if p.is_file() and not p.name.startswith("."))
+        + sorted(p for p in (C.input_dir(ROOT) / "sources").rglob("*") if p.is_file() and not p.name.startswith("."))
     for f in files:
         if f.is_file():
             h.update(f.name.encode("utf-8"))
@@ -465,7 +465,7 @@ def compute_status(d):
         return finish(0, "01_research-notes", action="interview",
                       next="책 정보가 없습니다. 사용자가 '이어서 써줘'라고 했다면 인터뷰를 시작하지 말고, 가장 최근에 내려받은 "
                            "작업 묶음(book-work-…zip)을 이 대화에 올려 달라고 하세요. 새 책이면 SKILL.md '첫 실행' 절차로 인터뷰한 뒤 "
-                           "작업 폴더에 book/user-book-toc.md를 만드세요.")
+                           "작업 폴더에 user_input/user-book-toc.md를 만드세요.")
     if C.PLACEHOLDER_RE.search(toc):
         return finish(0, "01_research-notes", action="interview",
                       next="책 정보 파일에 아직 빈칸(중괄호 두 겹)이 있습니다. 사용자가 '이어서 써줘'라고 했다면 인터뷰 대신 가장 최근 "
@@ -610,7 +610,7 @@ def metadata_leaks(d, md_meta):
     _, toc = load_toc()
     rules = dict(verify.RULE_DEFAULTS)
     rules.update({k: v for k, v in C.parse_kv(C.get_section(toc or "", "검증 규칙"), verify.RULE_DEFAULTS.keys())[0].items() if v})
-    sdir = ROOT / "book" / "sources"
+    sdir = C.input_dir(ROOT) / "sources"
     files = [x for x in sdir.rglob("*") if x.is_file() and not x.name.startswith(".")] if sdir.is_dir() else []
     files += [x for x in [d / "01_research-notes.md"] if x.is_file()]
     P = verify.leak_policy(toc or "", rules, files)
@@ -646,7 +646,7 @@ def cmd_status(a):
 def cmd_init(a):
     _, toc = load_toc()
     if not toc or C.PLACEHOLDER_RE.search(toc):
-        raise BookError("책 정보가 비어 있습니다. 먼저 SKILL.md '첫 실행' 인터뷰로 book/user-book-toc.md를 채우세요.")
+        raise BookError("책 정보가 비어 있습니다. 먼저 SKILL.md '첫 실행' 인터뷰로 user_input/user-book-toc.md를 채우세요.")
     today = a.date or datetime.date.today().strftime("%Y%m%d")
     name, n = today, 1
     while (DRAFT / name).exists():
@@ -1393,7 +1393,7 @@ def cmd_facts(a):
     # 실명일 수 있는 표현: 검사기와 같은 기준(verify.leak_scan)으로 원고 원문, 그림, 출처 목록을 보고, 직함이 붙은 모든 표현을 덧붙인다
     rules = dict(verify.RULE_DEFAULTS)
     rules.update({k: v for k, v in C.parse_kv(C.get_section(toc_now, "검증 규칙"), verify.RULE_DEFAULTS.keys())[0].items() if v})
-    sdir = ROOT / "book" / "sources"
+    sdir = C.input_dir(ROOT) / "sources"
     sfiles = [x for x in sdir.rglob("*") if x.is_file() and not x.name.startswith(".")] if sdir.is_dir() else []
     sfiles += [x for x in [d / "01_research-notes.md"] if x.is_file()]
     P = verify.leak_policy(toc_now, rules, sfiles)
@@ -1466,7 +1466,7 @@ def cmd_export(a):
     save_state(d, state)
     count = 0
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
-        for base in (ROOT / "book", d, OUTPUT / d.name):
+        for base in (C.input_dir(ROOT), d, OUTPUT / d.name):
             if not base.exists():
                 continue
             for f in sorted(base.rglob("*")):
@@ -1480,14 +1480,21 @@ def cmd_export(a):
     return 0
 
 
+def _legacy_name(n):
+    """4.0 이전 작업 묶음의 book/ 경로를 user_input/으로 바꾼다."""
+    return C.INPUT_DIR + n[len(C.LEGACY_INPUT_DIR):] if n.startswith(C.LEGACY_INPUT_DIR + "/") else n
+
+
 def cmd_import(a):
     zpath = pathlib.Path(a.zip)
     if not zpath.is_file():
         raise BookError(f"{zpath}이 없습니다.")
+    toc_rel = f"{C.INPUT_DIR}/{C.TOC_NAME}"
     with zipfile.ZipFile(zpath) as z:
-        names = z.namelist()
-        bad = [n for n in names if n.startswith("/") or "\\" in n or ":" in n or ".." in pathlib.PurePosixPath(n).parts
-               or not n.startswith(("book/", "draft/", "output/"))]
+        raw = z.namelist()
+        names = {_legacy_name(n): n for n in raw}  # 풀 경로 → ZIP 안의 이름 (예전 book/ 묶음도 user_input/으로 푼다)
+        bad = [n for n in raw if n.startswith("/") or "\\" in n or ":" in n or ".." in pathlib.PurePosixPath(n).parts
+               or not _legacy_name(n).startswith((C.INPUT_DIR + "/", "draft/", "output/"))]
         if bad:
             raise BookError(f"작업 묶음이 아닌 파일이 들어 있습니다: {', '.join(bad[:5])}")
         book_name = z.read("draft/.active").decode("utf-8").strip() if "draft/.active" in names else ""
@@ -1498,21 +1505,20 @@ def cmd_import(a):
         # 이 책 폴더 밖의 draft/output 경로나, 이미 있는 파일은 하나도 덮어쓰지 않는다
         foreign = [n for n in names if n.startswith(("draft/", "output/")) and n != "draft/.active"
                    and pathlib.PurePosixPath(n).parts[1] != book_name]
-        exists = [n for n in names if not n.endswith("/") and n != "draft/.active" and n != "book/user-book-toc.md" and (ROOT / n).exists()]
+        exists = [n for n in names if not n.endswith("/") and n != "draft/.active" and n != toc_rel and (ROOT / n).exists()]
         if foreign or exists:
             raise BookError(f"작업 묶음이 다른 책의 파일이나 이미 있는 파일을 덮어쓰려 합니다: {', '.join((foreign + exists)[:5])}")
-        if toc_here_exists := (ROOT / "book" / "user-book-toc.md").is_file():
-            if "book/user-book-toc.md" not in names:
-                raise BookError("작업 묶음에 책 설정이 없는데 이 작업 폴더에는 다른 책 설정이 있습니다. 빈 작업 폴더에서 불러오세요.")
-        toc_here = ROOT / "book" / "user-book-toc.md"
-        if toc_here.is_file() and "book/user-book-toc.md" in names and z.read("book/user-book-toc.md") != toc_here.read_bytes():
+        toc_here = C.input_dir(ROOT) / C.TOC_NAME
+        if toc_here.is_file() and toc_rel not in names:
+            raise BookError("작업 묶음에 책 설정이 없는데 이 작업 폴더에는 다른 책 설정이 있습니다. 빈 작업 폴더에서 불러오세요.")
+        if toc_here.is_file() and toc_rel in names and z.read(names[toc_rel]) != toc_here.read_bytes():
             raise BookError("이 작업 폴더의 책 설정이 작업 묶음의 것과 다릅니다. 다른 책이면 빈 작업 폴더에서 불러오세요.")
-        for n in names:
-            if n.endswith("/") or n == "draft/.active" or (n == "book/user-book-toc.md" and toc_here.is_file()):
+        for n, orig in names.items():
+            if n.endswith("/") or n == "draft/.active" or (n == toc_rel and toc_here.is_file()):
                 continue
             target = ROOT / n
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(z.read(n))
+            target.write_bytes(z.read(orig))
     (DRAFT / ".active").write_text(book_name + "\n", encoding="utf-8")
     d = DRAFT / book_name
     state = load_state(d)
@@ -1528,7 +1534,7 @@ def cmd_doctor(a):
     toc_path, toc = load_toc()
     print(f"책 설정 파일: {toc_path or '없음'}")
     if not toc:
-        print("  ✗ book/user-book-toc.md가 없습니다 (작업 폴더 → 스킬 폴더 순으로 찾음)")
+        print("  ✗ user_input/user-book-toc.md가 없습니다 (작업 폴더 → 스킬 폴더 순으로 찾음)")
         ok = False
     else:
         ph = C.PLACEHOLDER_RE.findall(toc)
@@ -1559,11 +1565,11 @@ def cmd_doctor(a):
             for k in C.parse_kv(C.get_section(toc, sec), keys)[1]:
                 print(f"  ✗ {sec}에 알 수 없는 키: '{k}'")
                 ok = False
-    src = ROOT / "book" / "sources"
+    src = C.input_dir(ROOT) / "sources"
     n = len([p for p in src.rglob("*") if p.is_file() and not p.name.startswith(".")]) if src.is_dir() else 0
-    print(f"  사내·저자 자료 (book/sources/): {n}개 파일")
+    print(f"  사내·저자 자료 (user_input/sources/): {n}개 파일")
     if toc and n == 0 and voice == "조직 화자":
-        print("  ✗ 조직 화자는 사례를 사내 자료에서만 가져옵니다. book/sources/에 자료를 넣으세요")
+        print("  ✗ 조직 화자는 사례를 사내 자료에서만 가져옵니다. user_input/sources/에 자료를 넣으세요")
         ok = False
     hwp = [p.name for p in src.rglob("*.hwp*")] if src.is_dir() else []
     if hwp:
@@ -1578,13 +1584,13 @@ def cmd_doctor(a):
             ok = False
     print(f"  {'✓' if shutil.which('soffice') else '·'} LibreOffice (선택: 있으면 PDF 쪽수를 실측한다)")
     print("점검 결과:", "이상 없음" if ok else "위 ✗ 항목을 고치세요")
-    sdir = ROOT / "book" / "sources"
+    sdir = C.input_dir(ROOT) / "sources"
     if sdir.is_dir():
         import verify
         files = [x for x in sdir.rglob("*") if x.is_file() and not x.name.startswith(".")]
         graded = [x.name for x in files if re.search(r"대외비|기밀|극비|사내\s*한정|Confidential|Internal\s+only", verify.read_any(x) or "", re.I)]
         unread = [x.name for x in files if verify.read_any(x) is None]
-        print(f"사내 자료: {len(files)}개 (book/sources/)")
+        print(f"사내 자료: {len(files)}개 (user_input/sources/)")
         if graded:
             print(f"  ! 보안 등급 표시가 있는 자료: {', '.join(graded[:8])}. 이 자료는 AI 서비스로 전송됩니다. 회사 정책에 맞는지 사용자에게 확인하세요.")
         if unread:
