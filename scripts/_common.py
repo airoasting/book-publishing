@@ -68,7 +68,7 @@ def get_section(md, title):
     """제목이 title인 헤딩 아래 본문을 돌려준다.
 
     끝은 '같은 레벨 이하'의 다음 헤딩이다. 하위 헤딩(###)에서 끊지 않는다.
-    (이 규칙을 어겨 목차 검사가 꺼져 있던 회귀가 있었다. tests/test_verify.py 참고)
+    (이 규칙을 어겨 목차 검사가 꺼져 있던 회귀가 있었다.)
     섹션이 없으면 None.
     """
     lines = md.splitlines()

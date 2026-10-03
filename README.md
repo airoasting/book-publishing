@@ -172,8 +172,7 @@ book-publishing/
 ├── scripts/          상태 판정, 검사기, Word 변환기, 그림 도구
 ├── user_input/       책 설정 템플릿
 ├── example/          240쪽 예시 책의 설정과 결과물 PDF
-├── assets/           README 이미지
-└── tests/            회귀 테스트
+└── assets/           README 이미지
 ```
 
 작업 폴더에는 `user_input/`(책 설정과 자료), `draft/`(작업 기록), `output/`(결과물)이 생깁니다.

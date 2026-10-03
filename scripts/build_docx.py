@@ -60,7 +60,7 @@ PUB_DEFAULTS = {
     "AI 제작 고지": "AI 도구의 도움을 받아 쓰고 사람이 검수한 책",  # 명사형이라 어미·화자와 무관. '없음'이면 넣지 않음
     "배포 표기": "없음",           # 예: '사내 한정', '대외비'. 표지와 모든 쪽 머리글에 찍힌다
 }
-# PUB_DEFAULTS는 user_input/user-book-toc.md 템플릿의 '출판 설정' 값과 같다 (tests/test_consistency.py가 확인한다).
+# PUB_DEFAULTS는 user_input/user-book-toc.md 템플릿의 '출판 설정' 값과 같게 유지한다.
 PAPER = C.PAPER
 FIG_LINE_RE = re.compile(r"^\[그림\s*(\d+)\s*[:.]\s*(.*?)\]\s*$")
 CITE_RE = re.compile(r"\[\[\s*(cite_[\w-]+(?:\s*,\s*cite_[\w-]+)*)\s*\]\]")
