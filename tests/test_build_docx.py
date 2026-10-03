@@ -9,7 +9,7 @@ import tempfile
 import unittest
 
 HERE = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "book-publishing" / "scripts"))
+sys.path.insert(0, str(HERE.parent / "scripts"))
 import build_docx  # noqa: E402
 
 FIX = HERE / "fixtures"

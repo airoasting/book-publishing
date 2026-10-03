@@ -11,7 +11,7 @@ import hashlib
 import re
 import pathlib
 
-SKILL_DIR = pathlib.Path(__file__).resolve().parent.parent  # book-publishing/
+SKILL_DIR = pathlib.Path(__file__).resolve().parent.parent  # 스킬 폴더 (저장소 루트)
 TOC_REL = pathlib.Path("book") / "user-book-toc.md"         # 작업 폴더 안의 책 설정
 TOC_TEMPLATE = SKILL_DIR / "assets" / "user-book-toc.md"     # 스킬에 든 빈 템플릿
 PLACEHOLDER_RE = re.compile(r"\{\{[^}]*\}\}")

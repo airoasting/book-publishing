@@ -1,7 +1,7 @@
 # 책 설정 (완성 예시: 노트북LM으로 다 됨)
 
 > 이 스킬로 실제로 만든 240쪽 실용서의 설정이다. 새 책은 `book/user-book-toc.md` 템플릿에서 시작하고, 막히는 칸이 있으면 이 파일을 참고한다.
-> 이 설정으로 만든 결과물 샘플: `examples/notebooklm/sample-output-v1.pdf` (스킬 v1 시절 산출물. v4 변환기 결과는 `preview-v4.png`)
+> 이 설정으로 만든 결과물 샘플: `output/NotebookLM_final.pdf` (스킬 v1 시절 산출물. v4 변환기 결과는 `preview-v4.png`)
 
 ## 기본 정보
 

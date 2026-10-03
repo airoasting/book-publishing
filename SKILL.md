@@ -10,7 +10,7 @@ AI 에이전트 팀이 책 한 권을 쓴다. 사람은 방향이 갈리는 세 
 
 ## 경로 규칙
 
-- `SKILL_DIR`: 이 `SKILL.md`가 있는 폴더 (`book-publishing/`). `references/`, `scripts/`, `assets/`가 여기 있다
+- `SKILL_DIR`: 이 `SKILL.md`가 있는 폴더 (`book-publishing`, 저장소 루트). `references/`, `scripts/`, `assets/`가 여기 있다
 - 작업 폴더: 책 파일이 쌓이는 폴더. 산출물 `book/`, `draft/`, `output/`이 여기 생긴다. 책 한 권에 작업 폴더 하나를 권한다
 - 책 설정: 작업 폴더의 `book/user-book-toc.md`. 없으면 스크립트가 `$SKILL_DIR/assets/user-book-toc.md`(빈 템플릿)를 보고 인터뷰로 안내한다
 - 아래에서 `BOOK`은 `python3 "$SKILL_DIR/scripts/book.py"`를 줄여 쓴 것이다 (`$SKILL_DIR`은 실제 경로로 바꿔 쓴다). 모든 스크립트는 작업 폴더에서 실행한다
